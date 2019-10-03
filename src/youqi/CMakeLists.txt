@@ -4,7 +4,7 @@ set(NAME_LIB ${MODULE})
 set(NAME_EXE ${MODULE}_exe)
 
 set(SOURCES_LIB
-    fj_and_root.cxx
+	fj_and_root.cxx
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")

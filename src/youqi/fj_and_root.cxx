@@ -8,18 +8,18 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TNtuple.h>
+#include <TString.h>
+#include <TMath.h>
 
 #include <fastjet/Selector.hh>
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequence.hh>
 #include <fastjet/contrib/SoftDrop.hh>
+
 namespace fj = fastjet;
 
 #include "Pythia8/Pythia.h"
 using namespace Pythia8;
-
-#include <TString.h>
 
 namespace youqi
 {
@@ -33,32 +33,66 @@ int fj_and_root()
 	cout << "[i] output file name: " << foutname << endl;
 	TFile fout(foutname.c_str(), "recreate");
 	fout.cd();
-        // book histograms
-        TH1F h_Q("h_Q", "Q [GeV]", 100, 0., 50.);
-        TH1F h_W("h_W", "W [GeV]", 100, 0., 140.);
-        TH1F h_x("h_x", "x", 100, 0., 1.);
-        TH1F h_y("h_y", "y", 100, 0., 1.);
-        TH1F h_nu("h_nu", "nu [GeV]", 100, 0., 10000.);
 
-        TH1F h_pTe("h_pTe", "pT of scattered electron", 100, 0., 20.);
+	// new branches
+	UInt_t ntrials, evid, id_quark;
+	Float_t xsec, x, y, Q2, W2;
+	Float_t e_quark, pt_quark, eta_quark, phi_quark, p_quark, theta_quark;
+	Float_t e_electron, pt_electron, eta_electron, phi_electron, p_electron, theta_electron;
+	Float_t e_photon, eta_photon, phi_photon;
 
-        TH1F h_pTjets("h_pTjets", "p_{T}^{jet} (GeV/c)", 40, 0., 40.);
-        //TH1F h_etaJets("h_etaJets", "eta for jets", 20, -5., 5.);
-        //TH1F h_phiJets("h_phiJets", "phi for jets", 30, -M_PI, M_PI);
-        //TH1F h_mJets("h_mJets", "mass for jets", 30, 0., 30.);
-        //TH1F h_multJets("h_multJets", "multiplicity for jets", 15, 0., 30.);
+	// new particle variables
+	std::vector<int> jetid;
+	std::vector<float> pt_jet;
+	std::vector<float> eta_jet;
+	std::vector<int> id_lead_part;
+	std::vector<int> id_part;
+	std::vector<float> pT_part;
+	std::vector<float> p_part;
+	std::vector<float> eta_part;
+	std::vector<float> theta_part;
+	std::vector<float> y_part;
+	std::vector<float> phi_part;
+	std::vector<float> e_part;
 
-	// book some ntuples
-	TNtuple tne("tne", "tne", "n:procid:xsec");
-	// particles
-	TNtuple tnp("tnp", "tnp", "procid:xsec:pt:phi:eta:m:pid:status");
-	// jets
-	TNtuple tnj("tnj", "tnj", "procid:xsec:pt:phi:eta:lpt:lpid:lstatus:sdpt:sdphi:sdeta:sdDR:zg:sdmu");
+	// initialize TTree
+	TTree *tree1 = new TTree("Tree1", "Tree1");
+	tree1->Branch("ntrials", &ntrials, "ntrials/I");
+	tree1->Branch("evid", &evid, "evid/I");
+	tree1->Branch("xsec", &xsec, "xsec/F");
+	tree1->Branch("x", &x, "x/F");
+	tree1->Branch("y", &y, "y/F");
+	tree1->Branch("Q2", &Q2, "Q2/F");
+	tree1->Branch("W2", &W2, "W2/F");
+	tree1->Branch("id_quark", &id_quark, "id_quark/I");
+	tree1->Branch("e_quark", &e_quark, "e_quark/F");
+	tree1->Branch("pt_quark", &pt_quark, "pt_quark/F");
+	tree1->Branch("eta_quark", &eta_quark, "eta_quark/F");
+	tree1->Branch("phi_quark", &phi_quark, "phi_quark/F");
+	tree1->Branch("p_quark", &p_quark, "p_quark/F");
+	tree1->Branch("theta_quark", &theta_quark, "theta_quark/F");
+	tree1->Branch("e_electron", &e_electron, "e_electron/F");
+	tree1->Branch("pt_electron", &pt_electron, "pt_electron/F");
+	tree1->Branch("eta_electron", &eta_electron, "eta_electron/F");
+	tree1->Branch("phi_electron", &phi_electron, "phi_electron/F");
+	tree1->Branch("p_electron", &p_electron, "p_electron/F");
+	tree1->Branch("theta_electron", &theta_electron, "theta_electron/F");
+	tree1->Branch("e_photon", &e_photon, "e_photon/F");
+	tree1->Branch("jetid", &jetid);
+	tree1->Branch("pt_jet", &pt_jet);
+	tree1->Branch("eta_jet", &eta_jet);
+	tree1->Branch("id_lead_part", &id_lead_part);
+	tree1->Branch("id_part", &id_part);
+	tree1->Branch("pT_part", &pT_part);
+	tree1->Branch("p_part", &p_part);
+	tree1->Branch("eta_part", &eta_part);
+	tree1->Branch("theta_part", &theta_part);
+	tree1->Branch("phi_part", &phi_part);
+	tree1->Branch("e_part", &e_part);
 
 	// intialize PYTHIA
 	Pythia pythia;
-        Event& event = pythia.event;
-
+	Event &event = pythia.event;
 	PythiaUtils::cook_pythia_settings(&pythia);
 	if (!pythia.init())
 	{
@@ -67,10 +101,11 @@ int fj_and_root()
 	}
 
 	// generate and analyze events
-	int nEv = args.getOptInt("--nev", 1); // default will be 1 event(!)
-	double jetR = args.getOptDouble("--jetR", 0.4);
+	int nEv = args.getOptInt("--nev", 4); // default will be 4 event(!)
+	double jetR = args.getOptDouble("--jetR", 1.0);
 	double minJetPt = args.getOptDouble("--minJetPt", 0.0);
-	double maxPartEta = std::abs(args.getOptDouble("--maxParticleEta", 20.));
+	double maxPartEta = std::abs(args.getOptDouble("--maxParticleEta", 4.5));
+	double minPartPt = args.getOptDouble("--minPartPt", 0.25);
 
 	// dump some parameters of the analysis
 	cout << "[i] configuration: " << endl
@@ -80,56 +115,74 @@ int fj_and_root()
 		 << "    maxPartEta:    " << maxPartEta << endl
 		 << "    output:        " << foutname << endl;
 
-	fj::Selector partSelector = fastjet::SelectorAbsEtaMax(maxPartEta);
+	fj::Selector partSelector = fastjet::SelectorAbsEtaMax(maxPartEta) * fastjet::SelectorPtMin(minPartPt);
 	fj::Selector jetSelector = fastjet::SelectorAbsEtaMax(maxPartEta - jetR - 0.01) * fastjet::SelectorPtMin(minJetPt);
 
-	// Begin event loop. Generate event. Skip if error. List first few.
+	// Begin event loop. Generate event. Skip if error..
+	int num_jet = 0;
 	LoopUtil::TPbar pbar(nEv);
 	for (int iEvent = 0; iEvent < nEv; ++iEvent)
 	{
 		pbar.Update();
-		if (!pythia.next()) continue;
+		if (!pythia.next())
+			continue;
+		
+		jetid.clear();
+		pt_jet.clear();
+		eta_jet.clear();
+		id_lead_part.clear();
+		id_part.clear();
+		pT_part.clear();
+		p_part.clear();
+		eta_part.clear();
+		theta_part.clear();
+		phi_part.clear();
+		e_part.clear();
 
-            double mProton = event[1].m();
+		// get struck quark index
+		int q;
+		for (int i = 0; i < event.size(); i++)
+		{
+			if (event[i].status() == -23 && event[i].id() != 11)
+			{
+				q = i;
+				break;
+			}
+		}
 
-            // Four-momenta of proton, electron, virtual photon/Z^0/W^+-.
-            Vec4 pProton = event[1].p();
-            Vec4 peIn    = event[4].p();
-            Vec4 peOut   = event[6].p();
-            Vec4 pPhoton = peIn - peOut;
+		// four-momenta of proton, electron, virtual photon/Z^0/W^+-.
+		Vec4 pProton = event[1].p();
+		Vec4 peIn = event[4].p();
+		Vec4 peOut = event[6].p();
+		Vec4 pPhoton = peIn - peOut;
+		Vec4 pQuark = event[q].p();
 
-            // Q2, W2, Bjorken x, y, nu.
-            double Q2  = - pPhoton.m2Calc();
-            double W2  = (pProton + pPhoton).m2Calc();
-            double x   = Q2 / (2. * pProton * pPhoton);
-            double y   = (pProton * pPhoton) / (pProton * peIn);
-            double nu  = (pProton * pPhoton) / mProton;
-
-            // Fill kinematics histograms.
-            h_Q.Fill( sqrt(Q2) );
-            h_W.Fill( sqrt(W2) );
-            h_x.Fill( x );
-            h_y.Fill( y );
-            h_nu.Fill( nu );
-
-            h_pTe.Fill( event[6].pT() );
-
-		tne.Fill(iEvent, pythia.info.code(), pythia.info.sigmaGen());
+		// Q2, W2, Bjorken x, y, nu.
+		Q2 = -pPhoton.m2Calc();
+		W2 = (pProton + pPhoton).m2Calc();
+		x = Q2 / (2. * pProton * pPhoton);
+		y = (pProton * pPhoton) / (pProton * peIn);
 
 		auto parts = FJUtils::getPseudoJetsFromPythia(&pythia, true); // only_final==true
 		std::vector<fj::PseudoJet> parts_selected = partSelector(parts);
 
-		// get the beam scattered electrons
-		auto hard_electron_indexes = PythiaUtils::find_outgoing_hard_electrons(&pythia);
-
-		for (auto &psj : parts_selected)
-		{
-			Pythia8::Particle *_p = psj.user_info<FJUtils::PythiaUserInfo>().getParticle();
-			tnp.Fill(pythia.info.code(), pythia.info.sigmaGen(),
-			         psj.perp(), psj.phi(), psj.eta(), _p->m(), _p->id(), _p->status());
-		}
-
-		FJUtils::mask_momentum_of(hard_electron_indexes, parts_selected);
+		evid = iEvent;
+		xsec = pythia.info.sigmaGen();
+		ntrials = pythia.info.nTried();
+		id_quark = event[q].id();
+		e_quark = event[q].e();
+		pt_quark = event[q].pT();
+		eta_quark = event[q].eta();
+		phi_quark = event[q].phi();
+		p_quark = event[q].pT() * TMath::CosH(event[q].eta());
+		theta_quark = event[q].theta();
+		e_electron = event[6].e();
+		pt_electron = event[6].pT();
+		eta_electron = event[6].eta();
+		phi_electron = event[6].phi();
+		p_electron = event[6].pT() * TMath::CosH(event[6].eta());
+		theta_electron = event[6].theta();
+		e_photon = pPhoton[0];
 
 		// run jet finding
 		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR);
@@ -137,26 +190,35 @@ int fj_and_root()
 		std::vector<fj::PseudoJet> jets_inclusive = ca.inclusive_jets();
 		std::vector<fj::PseudoJet> jets = jetSelector(jets_inclusive);
 
-		// soft drop jets
-		std::vector<fj::PseudoJet> sdjets = FJUtils::soft_drop_jets(jets, 0.1, 0.0, jetR); // note, running with default soft drop
-
-		// write jet properties to an ntuple
+		// save jet kinematics: loop over jets
 		for (unsigned int ij = 0; ij < jets.size(); ij++)
 		{
-			h_pTjets.Fill(jets[ij].perp());
-			auto _lead = fastjet::sorted_by_pt(jets[ij].constituents())[0];
-			Pythia8::Particle *_lead_py = _lead.user_info<FJUtils::PythiaUserInfo>().getParticle();
-			tnj.Fill(pythia.info.code(), pythia.info.sigmaGen(),
-			         jets[ij].perp(), jets[ij].phi(), jets[ij].eta(),
-			         // leading particle in the jet - by pT
-			         _lead.perp(), _lead_py->id(), _lead_py->status(),
-			         // after soft drop
-			         sdjets[ij].perp(), sdjets[ij].phi(), sdjets[ij].eta(),
-			         sdjets[ij].structure_of<fj::contrib::SoftDrop>().delta_R(),
-			         sdjets[ij].structure_of<fj::contrib::SoftDrop>().symmetry(), // aka zg
-			         sdjets[ij].structure_of<fj::contrib::SoftDrop>().mu());
+			// loop over particles
+			for (int i = 0; i < jets[ij].constituents().size(); i++)
+			{
+				jetid.push_back(num_jet + ij);
+				pt_jet.push_back(jets[ij].perp());
+				eta_jet.push_back(jets[ij].eta());
+
+				auto _lead = fastjet::sorted_by_pt(jets[ij].constituents())[0];
+				Pythia8::Particle *_lead_p = _lead.user_info<FJUtils::PythiaUserInfo>().getParticle();
+				id_lead_part.push_back(_lead_p->id());
+
+				Pythia8::Particle *_p = jets[ij].constituents()[i].user_info<FJUtils::PythiaUserInfo>().getParticle();
+				id_part.push_back(_p->id());
+				pT_part.push_back(jets[ij].constituents()[i].perp());
+				p_part.push_back(jets[ij].constituents()[i].perp() * TMath::CosH(jets[ij].constituents()[i].eta()));
+				eta_part.push_back(jets[ij].constituents()[i].eta());
+				theta_part.push_back(jets[ij].constituents()[i].theta());
+				phi_part.push_back(jets[ij].constituents()[i].phi());
+				e_part.push_back(jets[ij].constituents()[i].e());
+			}
 		}
-	}
+		num_jet = num_jet + jets.size();
+		tree1->Fill();
+
+	} //event
+
 	// write and close the output file
 	fout.Write();
 	fout.Close();
@@ -164,4 +226,4 @@ int fj_and_root()
 	// Done.
 	return 0;
 } // fj_and_root
-} // namespace
+} // namespace youqi
