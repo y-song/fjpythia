@@ -57,23 +57,6 @@ namespace PythiaUtils
 		return v;
 	}
 
-	std::vector<int> find_outgoing_beam_remnants(Pythia8::Pythia *pythia)
-	{
-		std::vector<int> v;
-		for (int i = 0; i < pythia->event.size(); i++)
-		{
-			if (!pythia->event[i].isFinal()) continue;
-			// http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
-			// 61 - 69 : particles produced by beam-remnant treatment
-			// 63 : outgoing beam remnant
-			if (pythia->event[i].status() >= 61 && pythia->event[i].status() <= 69)
-			{
-				v.push_back(i);
-			}
-		}
-		return v;
-	}
-
 	void cook_pythia_settings(Pythia8::Pythia *pythia)
 	{
 		auto &args = FJPyUtil::ArgParser::Instance();
@@ -177,21 +160,25 @@ namespace PythiaUtils
 		    args.isSet("--eic-cgamma") or args.isSet("--eic-bgamma") or args.isSet("--eic-qgamma") or
 		    args.isSet("--eic-test"))
 		{
-			pythia->readString("Beams:idA=11");
-			pythia->readString("Beams:idB=2212");
-			pythia->readString("Beams:eA=20");
-			pythia->readString("Beams:eB=250");
+			pythia->readString("Beams:idA=2212");
+			pythia->readString("Beams:idB=11");
+			pythia->readString("Beams:eA=100");
+			pythia->readString("Beams:eB=20");
 			pythia->readString("Beams:frameType=2");
 			pythia->readString("Init:showChangedSettings=on");
-			pythia->readString("Main:timesAllowErrors=10000");
+			pythia->readString("Main:timesAllowErrors=900000");
 			if (args.isSet("--eic-dis"))
 			{
 				pythia->readString("WeakBosonExchange:ff2ff(t:gmZ)=on");
-				pythia->readString("PhaseSpace:Q2Min=10");
+				pythia->readString("PhaseSpace:Q2Min=5");
 				pythia->readString("SpaceShower:pTmaxMatch=2");
 				pythia->readString("PDF:lepton=off");
 				pythia->readString("TimeShower:QEDshowerByL=off");
-
+				//pythia->readString("PDF:pSet=LHAPDF6:EPPS16nlo_CT14nlo_Pb208");
+				//pythia->readString("HadronLevel:all=off");
+				//pythia->readString("PDF:useHardNPDFA=on");
+				//pythia->readString("PDF:nPDFSetA=3");
+					
 				args.addOpts("--pythia-process-configured");
 			}
 			if (args.isSet("--eic-lowQ2"))

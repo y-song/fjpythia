@@ -121,14 +121,66 @@ namespace FJUtils
 		return soft_dropped;
 	}
 
-	std::vector<fj::PseudoJet> getPseudoJetsFromPythia(Pythia8::Pythia *pythia, bool only_final)
-	{
-		std::vector<fj::PseudoJet> parts;
+	int findMaxPtElectron(Pythia8::Pythia *pythia)
+	{	
+		std::vector<int> finalElectron;
 		for (int ip = 0; ip < pythia->event.size(); ip++)
 		{
+			if (pythia->event[ip].id() == 11 && pythia->event[ip].isFinal())
+			{
+				finalElectron.push_back(ip);
+			}
+		}
+		float max = pythia->event[finalElectron.at(0)].pT();
+		int index = 0;
+		for (int i = 0; i < finalElectron.size(); i++)
+		{
+			if (pythia->event[finalElectron.at(i)].pT() > max)
+			{
+				max = pythia->event[finalElectron.at(i)].pT();
+				index = i;
+			}
+		}
+		return index;
+	}
+	
+	std::vector<fj::PseudoJet> getPseudoJetsFromPythia(Pythia8::Pythia *pythia, bool only_final)
+	{
+		//std::cout << "new event" << std::endl;
+		std::vector<int> finalElectron;
+		for (int ip = 0; ip < pythia->event.size(); ip++)
+		{
+			if (pythia->event[ip].id() == 11 && pythia->event[ip].isFinal())
+			{
+				finalElectron.push_back(ip);
+				//std::cout << "final e-: " << ip << std::endl;
+			}
+		}
+		double max = pythia->event[finalElectron.at(0)].pT();
+		//std::cout << "max: " << max << std::endl;
+		int index;
+		for (int i = 0; i < finalElectron.size(); i++)
+		{
+			//std::cout << "max: " << max << std::endl;
+			//std::cout << "pythia->event[finalElectron.at(i)].pT(): " << pythia->event[finalElectron.at(i)].pT() << std::endl;
+			//std::cout << "max type: " << typeid(max).name() << std::endl;
+			//std::cout << "pythia->event[finalElectron.at(i)].pT() type: " << typeid(pythia->event[finalElectron.at(i)].pT()).name() << std::endl;
+			
+			if ((pythia->event[finalElectron.at(i)].pT() == max) || (pythia->event[finalElectron.at(i)].pT() > max))
+			{
+				max = pythia->event[finalElectron.at(i)].pT();
+				index = finalElectron.at(i);
+				//std::cout << "entered if statement" << std::endl;
+			}
+		}
+		//std::cout << "index: " << index << std::endl;
+		std::vector<fj::PseudoJet> parts;
+		for (int ip = 0; ip < pythia->event.size(); ip++)
+		{	
 			if (only_final)
 			{
-				if (pythia->event[ip].isFinal())
+				if (pythia->event[ip].isFinal() && ip != index && pythia->event[ip].idAbs() != 12 && pythia->event[ip].idAbs() != 14 && 
+					pythia->event[ip].idAbs()!=16)
 				{
 					fj::PseudoJet psj;
 					psj.reset_momentum(pythia->event[ip].px(), pythia->event[ip].py(), pythia->event[ip].pz(), pythia->event[ip].e());
