@@ -151,14 +151,13 @@ int fj_and_root()
 		std::vector<fj::PseudoJet> parts_selected = partSelector(parts);
 
 		// run jet finding
-		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR, fj::WTA_pt_scheme);
-		//fj::JetDefinition jet_def(fj::antikt_algorithm, jetR);
+		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR);
 		fj::ClusterSequence ca(parts_selected, jet_def);
 		std::vector<fj::PseudoJet> jets_inclusive = ca.inclusive_jets();
 		std::vector<fj::PseudoJet> jets = jetSelector(jets_inclusive);
 
 		// soft drop jets
-		std::vector<fj::PseudoJet> sdjets = FJUtils::soft_drop_jets(jets, 0.1, 2.0, jetR);
+		std::vector<fj::PseudoJet> sdjets = FJUtils::soft_drop_jets(jets, 0.1, 0.0, jetR);
 
 		// write jet properties to a TTree
 		for (unsigned int ij = 0; ij < jets.size(); ij++)
