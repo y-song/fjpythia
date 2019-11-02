@@ -162,15 +162,15 @@ namespace PythiaUtils
 		{
 			pythia->readString("Beams:idA=2212");
 			pythia->readString("Beams:idB=11");
-			pythia->readString("Beams:eA=100");
-			pythia->readString("Beams:eB=20");
+			pythia->readString("Beams:eA=50");
+			pythia->readString("Beams:eB=10");
 			pythia->readString("Beams:frameType=2");
 			pythia->readString("Init:showChangedSettings=on");
 			pythia->readString("Main:timesAllowErrors=900000");
 			if (args.isSet("--eic-dis"))
 			{
 				pythia->readString("WeakBosonExchange:ff2ff(t:gmZ)=on");
-				pythia->readString("PhaseSpace:Q2Min=5");
+				pythia->readString("PhaseSpace:Q2Min=1");
 				pythia->readString("SpaceShower:pTmaxMatch=2");
 				pythia->readString("PDF:lepton=off");
 				pythia->readString("TimeShower:QEDshowerByL=off");
