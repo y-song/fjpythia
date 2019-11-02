@@ -151,7 +151,7 @@ int fj_and_root()
 		std::vector<fj::PseudoJet> parts_selected = partSelector(parts);
 
 		// run jet finding
-		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR);
+		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR, fj::WTA_pt_scheme);
 		fj::ClusterSequence ca(parts_selected, jet_def);
 		std::vector<fj::PseudoJet> jets_inclusive = ca.inclusive_jets();
 		std::vector<fj::PseudoJet> jets = jetSelector(jets_inclusive);
