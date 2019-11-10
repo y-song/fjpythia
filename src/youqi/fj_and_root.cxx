@@ -43,8 +43,11 @@ int fj_and_root()
 
 	// new particle variables
 	std::vector<int> jetid;
-	std::vector<int> neither;
-    
+	std::vector<float> pt_jet;
+	std::vector<float> eta_jet;
+	std::vector<float> eta_part;
+	std::vector<float> p_part;
+
 	// initialize TTree
 	TTree *tree1 = new TTree("Tree1", "Tree1");
 	tree1->Branch("ntrials", &ntrials, "ntrials/I");
@@ -69,7 +72,10 @@ int fj_and_root()
 	tree1->Branch("theta_electron", &theta_electron, "theta_electron/F");
 	tree1->Branch("e_photon", &e_photon, "e_photon/F");
 	tree1->Branch("jetid", &jetid);
-	tree1->Branch("neither", &neither);
+	tree1->Branch("pt_jet", &pt_jet);
+	tree1->Branch("eta_jet", &eta_jet);
+	tree1->Branch("eta_part", &eta_part);
+	tree1->Branch("p_part", &p_part);
 
 	// intialize PYTHIA
 	Pythia pythia;
@@ -108,6 +114,12 @@ int fj_and_root()
 		if (!pythia.next())
 			continue;
 		
+		jetid.clear();
+		pt_jet.clear();
+		eta_jet.clear();
+		eta_part.clear();
+		p_part.clear();
+
 		// get struck quark index
 		int q;
 		for (int i = 0; i < event.size(); i++)
@@ -118,9 +130,6 @@ int fj_and_root()
 				break;
 			}
 		}
-
-        jetid.clear();
-        neither.clear();
 
 		// four-momenta of proton, electron, virtual photon/Z^0/W^+-.
 		Vec4 pProton = event[1].p();
@@ -168,13 +177,15 @@ int fj_and_root()
 			// loop over particles
 			for (int i = 0; i < jets[ij].constituents().size(); i++)
 			{
-                jetid.push_back(num_jet + ij);
+				jetid.push_back(num_jet + ij);
+				pt_jet.push_back(jets[ij].perp());
+				eta_jet.push_back(jets[ij].eta());
+
 				Pythia8::Particle *_p = jets[ij].constituents()[i].user_info<FJUtils::PythiaUserInfo>().getParticle();
-				if ( ! ((_p->id() == 22 && event[_p->mother1()].id() == 111) || _p->isHadron()))
-				{
-					neither.push_back(_p->id());
-				}	
-			}
+				p_part.push_back(jets[ij].constituents()[i].perp() * TMath::CosH(jets[ij].constituents()[i].eta()));
+				eta_part.push_back(jets[ij].constituents()[i].eta());
+			}	
+			
 		}	
 		num_jet = num_jet + jets.size();
 		tree1->Fill();
