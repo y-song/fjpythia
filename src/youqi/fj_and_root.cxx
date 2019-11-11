@@ -46,6 +46,7 @@ int fj_and_root()
 	std::vector<float> pt_jet;
 	std::vector<float> eta_jet;
 	std::vector<float> eta_part;
+	std::vector<float> theta_part;
 	std::vector<float> p_part;
 
 	// initialize TTree
@@ -75,6 +76,7 @@ int fj_and_root()
 	tree1->Branch("pt_jet", &pt_jet);
 	tree1->Branch("eta_jet", &eta_jet);
 	tree1->Branch("eta_part", &eta_part);
+	tree1->Branch("theta_part", &theta_part);
 	tree1->Branch("p_part", &p_part);
 
 	// intialize PYTHIA
@@ -118,6 +120,7 @@ int fj_and_root()
 		pt_jet.clear();
 		eta_jet.clear();
 		eta_part.clear();
+		theta_part.clear();
 		p_part.clear();
 
 		// get struck quark index
@@ -184,7 +187,7 @@ int fj_and_root()
 				Pythia8::Particle *_p = jets[ij].constituents()[i].user_info<FJUtils::PythiaUserInfo>().getParticle();
 				p_part.push_back(jets[ij].constituents()[i].perp() * TMath::CosH(jets[ij].constituents()[i].eta()));
 				eta_part.push_back(jets[ij].constituents()[i].eta());
-			}	
+				theta_part.push_back(jets[ij].constituents()[i].theta());			}	
 			
 		}	
 		num_jet = num_jet + jets.size();
