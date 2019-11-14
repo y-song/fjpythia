@@ -39,7 +39,7 @@ int fj_and_root()
 	Float_t xsec, x, y, Q2, W2;
 	Float_t e_quark, pt_quark, eta_quark, phi_quark, p_quark, theta_quark;
 	Float_t e_electron, pt_electron, eta_electron, phi_electron, p_electron, theta_electron;
-	Float_t e_photon, eta_photon, phi_photon;
+	Float_t phi_photon;
 
 	// new particle variables
 	std::vector<int> jetid;
@@ -48,6 +48,7 @@ int fj_and_root()
 	std::vector<float> eta_part;
 	std::vector<float> theta_part;
 	std::vector<float> p_part;
+	std::vector<float> phi_part;
 
 	// initialize TTree
 	TTree *tree1 = new TTree("Tree1", "Tree1");
@@ -71,13 +72,14 @@ int fj_and_root()
 	tree1->Branch("phi_electron", &phi_electron, "phi_electron/F");
 	tree1->Branch("p_electron", &p_electron, "p_electron/F");
 	tree1->Branch("theta_electron", &theta_electron, "theta_electron/F");
-	tree1->Branch("e_photon", &e_photon, "e_photon/F");
+	tree1->Branch("phi_photon", &phi_photon, "phi_photon/F");
 	tree1->Branch("jetid", &jetid);
 	tree1->Branch("pt_jet", &pt_jet);
 	tree1->Branch("eta_jet", &eta_jet);
 	tree1->Branch("eta_part", &eta_part);
 	tree1->Branch("theta_part", &theta_part);
 	tree1->Branch("p_part", &p_part);
+	tree1->Branch("phi_part", &phi_part);
 
 	// intialize PYTHIA
 	Pythia pythia;
@@ -122,6 +124,7 @@ int fj_and_root()
 		eta_part.clear();
 		theta_part.clear();
 		p_part.clear();
+		phi_part.clear();
 
 		// get struck quark index
 		int q;
@@ -166,7 +169,7 @@ int fj_and_root()
 		phi_electron = event[6].phi();
 		p_electron = event[6].pT() * TMath::CosH(event[6].eta());
 		theta_electron = event[6].theta();
-		e_photon = pPhoton[0];
+		phi_photon = pPhoton.phi();
 
 		// run jet finding
 		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR);
@@ -187,8 +190,9 @@ int fj_and_root()
 				Pythia8::Particle *_p = jets[ij].constituents()[i].user_info<FJUtils::PythiaUserInfo>().getParticle();
 				p_part.push_back(jets[ij].constituents()[i].perp() * TMath::CosH(jets[ij].constituents()[i].eta()));
 				eta_part.push_back(jets[ij].constituents()[i].eta());
-				theta_part.push_back(jets[ij].constituents()[i].theta());			}	
-			
+				theta_part.push_back(jets[ij].constituents()[i].theta());			
+				phi_part.push_back(jets[ij].constituents()[i].phi());
+			}	
 		}	
 		num_jet = num_jet + jets.size();
 		tree1->Fill();
