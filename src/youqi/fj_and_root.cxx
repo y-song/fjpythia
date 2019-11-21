@@ -103,7 +103,7 @@ int fj_and_root()
 	double jetR = args.getOptDouble("--jetR", 1.0);
 	double minJetPt = args.getOptDouble("--minJetPt", 0.0);
 	double maxPartEta = std::abs(args.getOptDouble("--maxParticleEta", 4.5));
-	double minPartPt = args.getOptDouble("--minPartPt", 0.5);
+	double minPartPt = args.getOptDouble("--minPartPt", 0.1);
 
 	// dump some parameters of the analysis
 	cout << "[i] configuration: " << endl
