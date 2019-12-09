@@ -35,47 +35,58 @@ int fj_and_root()
 	fout.cd();
 
 	// new branches
-	UInt_t ntrials, evid, id_quark;
+	UInt_t ntrials, evid, ncharged, nneutral, nnh, nch, n_decay_photon;
 	Float_t xsec, x, y, Q2, W2;
+	Float_t e_jet, pt_jet, eta_jet, phi_jet, p_jet, theta_jet;
+	Float_t e_jet_g, pt_jet_g, eta_jet_g, phi_jet_g, p_jet_g, theta_jet_g, delta_R, zg;
 	Float_t e_quark, pt_quark, eta_quark, phi_quark, p_quark, theta_quark;
 	Float_t e_electron, pt_electron, eta_electron, phi_electron, p_electron, theta_electron;
-	Float_t e_photon, eta_photon, phi_photon;
-
-	// new particle variables
-	std::vector<int> jetid;
-	std::vector<float> pt_jet;
-	std::vector<float> eta_jet;
-	std::vector<float> eta_part;
-	std::vector<float> p_part;
+	Float_t e_photon, pt_photon, eta_photon, phi_photon;
 
 	// initialize TTree
-	TTree *tree1 = new TTree("Tree1", "Tree1");
-	tree1->Branch("ntrials", &ntrials, "ntrials/I");
-	tree1->Branch("evid", &evid, "evid/I");
-	tree1->Branch("xsec", &xsec, "xsec/F");
-	tree1->Branch("x", &x, "x/F");
-	tree1->Branch("y", &y, "y/F");
-	tree1->Branch("Q2", &Q2, "Q2/F");
-	tree1->Branch("W2", &W2, "W2/F");
-	tree1->Branch("id_quark", &id_quark, "id_quark/I");
-	tree1->Branch("e_quark", &e_quark, "e_quark/F");
-	tree1->Branch("pt_quark", &pt_quark, "pt_quark/F");
-	tree1->Branch("eta_quark", &eta_quark, "eta_quark/F");
-	tree1->Branch("phi_quark", &phi_quark, "phi_quark/F");
-	tree1->Branch("p_quark", &p_quark, "p_quark/F");
-	tree1->Branch("theta_quark", &theta_quark, "theta_quark/F");
-	tree1->Branch("e_electron", &e_electron, "e_electron/F");
-	tree1->Branch("pt_electron", &pt_electron, "pt_electron/F");
-	tree1->Branch("eta_electron", &eta_electron, "eta_electron/F");
-	tree1->Branch("phi_electron", &phi_electron, "phi_electron/F");
-	tree1->Branch("p_electron", &p_electron, "p_electron/F");
-	tree1->Branch("theta_electron", &theta_electron, "theta_electron/F");
-	tree1->Branch("e_photon", &e_photon, "e_photon/F");
-	tree1->Branch("jetid", &jetid);
-	tree1->Branch("pt_jet", &pt_jet);
-	tree1->Branch("eta_jet", &eta_jet);
-	tree1->Branch("eta_part", &eta_part);
-	tree1->Branch("p_part", &p_part);
+	TTree *tree = new TTree("Tree", "Tree");
+	tree->Branch("ntrials", &ntrials, "ntrials/I");
+	tree->Branch("evid", &evid, "evid/I");
+	tree->Branch("ncharged", &ncharged, "ncharged/I");
+	tree->Branch("nneutral", &nneutral, "nneutral/I");
+	tree->Branch("nnh", &nnh, "nnh/I");
+	tree->Branch("nch", &nch, "nch/I");
+	tree->Branch("n_decay_photon", &n_decay_photon, "n_decay_photon/I");
+	tree->Branch("xsec", &xsec, "xsec/F");
+	tree->Branch("x", &x, "x/F");
+	tree->Branch("y", &y, "y/F");
+	tree->Branch("Q2", &Q2, "Q2/F");
+	tree->Branch("W2", &W2, "W2/F");
+	tree->Branch("e_jet", &e_jet, "e_jet/F");
+	tree->Branch("pt_jet", &pt_jet, "pt_jet/F");
+	tree->Branch("eta_jet", &eta_jet, "eta_jet/F");
+	tree->Branch("phi_jet", &phi_jet, "phi_jet/F");
+	tree->Branch("p_jet", &p_jet, "p_jet/F");
+	tree->Branch("theta_jet", &theta_jet, "theta_jet/F");
+	tree->Branch("e_jet_g", &e_jet_g, "e_jet_g/F");
+	tree->Branch("pt_jet_g", &pt_jet_g, "pt_jet_g/F");
+	tree->Branch("eta_jet_g", &eta_jet_g, "eta_jet_g/F");
+	tree->Branch("phi_jet_g", &phi_jet_g, "phi_jet_g/F");
+	tree->Branch("p_jet_g", &p_jet_g, "p_jet_g/F");
+	tree->Branch("theta_jet_g", &theta_jet_g, "theta_jet_g/F");
+	tree->Branch("delta_R", &delta_R, "delta_R/F");
+	tree->Branch("zg",&zg,"zg/F");
+	tree->Branch("e_quark", &e_quark, "e_quark/F");
+	tree->Branch("pt_quark", &pt_quark, "pt_quark/F");
+	tree->Branch("eta_quark", &eta_quark, "eta_quark/F");
+	tree->Branch("phi_quark", &phi_quark, "phi_quark/F");
+	tree->Branch("p_quark", &p_quark, "p_quark/F");
+	tree->Branch("theta_quark", &theta_quark, "theta_quark/F");
+	tree->Branch("e_electron", &e_electron, "e_electron/F");
+	tree->Branch("pt_electron", &pt_electron, "pt_electron/F");
+	tree->Branch("eta_electron", &eta_electron, "eta_electron/F");
+	tree->Branch("phi_electron", &phi_electron, "phi_electron/F");
+	tree->Branch("p_electron", &p_electron, "p_electron/F");
+	tree->Branch("theta_electron", &theta_electron, "theta_electron/F");
+	tree->Branch("e_photon", &e_photon, "e_photon/F");
+	tree->Branch("pt_photon", &pt_photon, "pt_photon/F");
+	tree->Branch("eta_photon", &eta_photon, "eta_photon/F");
+	tree->Branch("phi_photon", &phi_photon, "phi_photon/F");
 
 	// intialize PYTHIA
 	Pythia pythia;
@@ -88,8 +99,8 @@ int fj_and_root()
 	}
 
 	// generate and analyze events
-	int nEv = args.getOptInt("--nev", 4); // default will be 4 event(!)
-	double jetR = args.getOptDouble("--jetR", 1.0);
+	int nEv = args.getOptInt("--nev", 1); // default will be 1 event(!)
+	double jetR = args.getOptDouble("--jetR", 0.5);
 	double minJetPt = args.getOptDouble("--minJetPt", 0.0);
 	double maxPartEta = std::abs(args.getOptDouble("--maxParticleEta", 4.5));
 	double minPartPt = args.getOptDouble("--minPartPt", 0.25);
@@ -105,22 +116,15 @@ int fj_and_root()
 	fj::Selector partSelector = fastjet::SelectorAbsEtaMax(maxPartEta) * fastjet::SelectorPtMin(minPartPt);
 	fj::Selector jetSelector = fastjet::SelectorAbsEtaMax(maxPartEta - jetR - 0.01) * fastjet::SelectorPtMin(minJetPt);
 
-	// Begin event loop. Generate event. Skip if error..
-	int num_jet = 0;
+	// Begin event loop. Generate event. Skip if error. List first few.
 	LoopUtil::TPbar pbar(nEv);
 	for (int iEvent = 0; iEvent < nEv; ++iEvent)
 	{
 		pbar.Update();
 		if (!pythia.next())
 			continue;
-		
-		jetid.clear();
-		pt_jet.clear();
-		eta_jet.clear();
-		eta_part.clear();
-		p_part.clear();
 
-		// get struck quark index
+		// Get struck quark index.
 		int q;
 		for (int i = 0; i < event.size(); i++)
 		{
@@ -131,7 +135,7 @@ int fj_and_root()
 			}
 		}
 
-		// four-momenta of proton, electron, virtual photon/Z^0/W^+-.
+		// Four-momenta of proton, electron, virtual photon/Z^0/W^+-.
 		Vec4 pProton = event[1].p();
 		Vec4 peIn = event[4].p();
 		Vec4 peOut = event[6].p();
@@ -147,50 +151,88 @@ int fj_and_root()
 		auto parts = FJUtils::getPseudoJetsFromPythia(&pythia, true); // only_final==true
 		std::vector<fj::PseudoJet> parts_selected = partSelector(parts);
 
-		evid = iEvent;
-		xsec = pythia.info.sigmaGen();
-		ntrials = pythia.info.nTried();
-		id_quark = event[q].id();
-		e_quark = event[q].e();
-		pt_quark = event[q].pT();
-		eta_quark = event[q].eta();
-		phi_quark = event[q].phi();
-		p_quark = event[q].pT() * TMath::CosH(event[q].eta());
-		theta_quark = event[q].theta();
-		e_electron = event[6].e();
-		pt_electron = event[6].pT();
-		eta_electron = event[6].eta();
-		phi_electron = event[6].phi();
-		p_electron = event[6].pT() * TMath::CosH(event[6].eta());
-		theta_electron = event[6].theta();
-		e_photon = pPhoton[0];
-
 		// run jet finding
 		fj::JetDefinition jet_def(fj::antikt_algorithm, jetR);
 		fj::ClusterSequence ca(parts_selected, jet_def);
 		std::vector<fj::PseudoJet> jets_inclusive = ca.inclusive_jets();
 		std::vector<fj::PseudoJet> jets = jetSelector(jets_inclusive);
 
-		// save jet kinematics: loop over jets
+		// soft drop jets
+		std::vector<fj::PseudoJet> sdjets = FJUtils::soft_drop_jets(jets, 0.1, 0.0, jetR);
+
+		// write jet properties to a TTree
 		for (unsigned int ij = 0; ij < jets.size(); ij++)
 		{
-			// loop over particles
-			for (int i = 0; i < jets[ij].constituents().size(); i++)
+			// jet constituents loop
+			for (unsigned int i = 0; i < jets[ij].constituents().size(); i++)
 			{
-				jetid.push_back(num_jet + ij);
-				pt_jet.push_back(jets[ij].perp());
-				eta_jet.push_back(jets[ij].eta());
-
-				Pythia8::Particle *_p = jets[ij].constituents()[i].user_info<FJUtils::PythiaUserInfo>().getParticle();
-				p_part.push_back(jets[ij].constituents()[i].perp() * TMath::CosH(jets[ij].constituents()[i].eta()));
-				eta_part.push_back(jets[ij].constituents()[i].eta());
-			}	
+				auto _part = fastjet::sorted_by_pt(jets[ij].constituents())[i];
+				Pythia8::Particle *_part_py = _part.user_info<FJUtils::PythiaUserInfo>().getParticle();
+				// count numbers of charged and neutral particles
+				if (_part_py->isCharged() == true)
+					ncharged += 1;
+				else
+					nneutral += 1;
+				// count numbers of charged and neutral hadrons
+                		if (_part_py->isHadron())
+				{
+					if (_part_py->isNeutral())
+                    			{
+						nnh += 1;
+					}
+					else
+					{
+						nch += 1;
+					}
+				}
+				// count number of decay photons (photon + mother1 is pi0)
+				if (_part_py->id() == 22 && event[_part_py->mother1()].id() == 111)
+					n_decay_photon += 1;
+			}		
+			evid = iEvent;
+			xsec = pythia.info.sigmaGen();
+			ntrials = pythia.info.nTried();
+			e_jet = jets[ij].e();
+			pt_jet = jets[ij].perp();
+			eta_jet = jets[ij].eta();
+			phi_jet = jets[ij].phi();
+			p_jet = jets[ij].perp() * TMath::CosH(jets[ij].eta());
+			theta_jet = jets[ij].theta();
+			e_jet_g = sdjets[ij].e();
+			pt_jet_g = sdjets[ij].perp();
+			eta_jet_g = sdjets[ij].eta();
+			phi_jet_g = sdjets[ij].phi();
+			p_jet_g = sdjets[ij].perp() * TMath::CosH(sdjets[ij].eta());
+			theta_jet_g = sdjets[ij].theta();
+			delta_R = sdjets[ij].structure_of<fj::contrib::SoftDrop>().delta_R();
+			zg = sdjets[ij].structure_of<fj::contrib::SoftDrop>().symmetry();
+			e_quark = event[q].e();
+			pt_quark = event[q].pT();
+			eta_quark = event[q].eta();
+			phi_quark = event[q].phi();
+			p_quark = event[q].pT() * TMath::CosH(event[q].eta());
+			theta_quark = event[q].theta();
+			e_electron = event[6].e();
+			pt_electron = event[6].pT();
+			eta_electron = event[6].eta();
+			phi_electron = event[6].phi();
+			p_electron = event[6].pT() * TMath::CosH(event[6].eta());
+			theta_electron = event[6].theta();
+			e_photon = pPhoton[0];
+			pt_photon = pPhoton.pT();
+			eta_photon = pPhoton.eta();
+			phi_photon = pPhoton.phi();
 			
-		}	
-		num_jet = num_jet + jets.size();
-		tree1->Fill();
+			tree->Fill();
 
-	} //event
+			ncharged = 0;
+			nneutral = 0;
+		        nnh = 0;
+			nch = 0;
+			n_decay_photon = 0;
+	
+		} //jet
+	}	 //event
 
 	// write and close the output file
 	fout.Write();
