@@ -42,6 +42,7 @@ int fj_and_root()
 
 	// new particle variables
 	std::vector<float> pt_jet;
+	std::vector<float> phi_jet;
 	std::vector<float> z;
 	std::vector<float> j;
 
@@ -56,6 +57,7 @@ int fj_and_root()
 	tree1->Branch("W2", &W2, "W2/F");
 	tree1->Branch("phi_photon", &phi_photon, "phi_photon/F");
 	tree1->Branch("pt_jet", &pt_jet);
+	tree1->Branch("phi_jet", &phi_jet);
 	tree1->Branch("z", &z);
 	tree1->Branch("j", &j);
 
@@ -99,6 +101,7 @@ int fj_and_root()
 	        z.clear();
        		j.clear();
 		pt_jet.clear();
+		phi_jet.clear();
 
 		// four-momenta of proton, electron, virtual photon/Z^0/W^+-.
 		Vec4 pProton = event[1].p();
@@ -148,6 +151,7 @@ int fj_and_root()
                     			z.push_back((pxj*pxh + pyj*pyh + pzj*pzh) / (p_jet*p_jet));
                     			j.push_back(cross / p_jet);
 				    	pt_jet.push_back(jets[ij].perp());
+        			    	phi_jet.push_back(jets[ij].phi());
                 		}
 			}	
 		}	
