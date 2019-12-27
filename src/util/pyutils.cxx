@@ -162,8 +162,8 @@ namespace PythiaUtils
 		{
 			pythia->readString("Beams:idA=2212");
 			pythia->readString("Beams:idB=11");
-			pythia->readString("Beams:eA=50");
-			pythia->readString("Beams:eB=10");
+			pythia->readString("Beams:eA=100");
+			pythia->readString("Beams:eB=20");
 			pythia->readString("Beams:frameType=2");
 			pythia->readString("Init:showChangedSettings=on");
 			pythia->readString("Main:timesAllowErrors=900000");
@@ -174,10 +174,10 @@ namespace PythiaUtils
 				pythia->readString("SpaceShower:pTmaxMatch=2");
 				pythia->readString("PDF:lepton=off");
 				pythia->readString("TimeShower:QEDshowerByL=off");
-				//pythia->readString("PDF:pSet=LHAPDF6:EPPS16nlo_CT14nlo_Pb208");
+				pythia->readString("PDF:pSet=LHAPDF6:EPPS16nlo_CT14nlo_Pb208");
 				//pythia->readString("HadronLevel:all=off");
-				//pythia->readString("PDF:useHardNPDFA=on");
-				//pythia->readString("PDF:nPDFSetA=3");
+				pythia->readString("PDF:useHardNPDFA=on");
+				pythia->readString("PDF:nPDFSetA=3");
 					
 				args.addOpts("--pythia-process-configured");
 			}
